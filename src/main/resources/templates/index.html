@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot + Thymeleaf + Tailwind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-blue-600 p-4 text-white">
+        <div class="container mx-auto flex justify-between">
+            <h1 class="text-xl font-bold">Mi App Spring Boot</h1>
+            <ul class="flex space-x-4">
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="container mx-auto text-center py-16">
+        <h2 class="text-4xl font-bold mb-4">Bienvenido a Spring Boot + Thymeleaf</h2>
+    </section>
+
+    <section>
+
+
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+            <h1 class="text-2xl font-bold mb-4">Usuarios</h1>
+            <button id="btnNuevo" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4">
+                Nuevo Usuario
+            </button>
+
+            <table class="table-auto w-full border-collapse">
+                <thead>
+                <tr class="bg-gray-200">
+                    <th class="border px-4 py-2">ID</th>
+                    <th class="border px-4 py-2">Nombre</th>
+                    <th class="border px-4 py-2">Email</th>
+                    <th class="border px-4 py-2">Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaUsuarios"></tbody>
+            </table>
+        </div>
+
+        <div id="modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded shadow w-96">
+                <h2 id="modalTitle" class="text-xl font-bold mb-4">Nuevo Usuario</h2>
+                <input type="hidden" id="usuarioId">
+                <input type="text" id="nombre" placeholder="Nombre" class="border rounded w-full px-3 py-2 mb-4">
+                <input type="email" id="email" placeholder="Email" class="border rounded w-full px-3 py-2 mb-4">
+                <div class="flex justify-end space-x-2">
+                    <button id="btnGuardar" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Guardar</button>
+                    <button id="btnCerrar" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            const apiUrl = /*[[${apiUrl}]]*/ 'default';
+            console.log("api:"+ apiUrl)
+            async function cargarUsuarios() {
+                const res = await fetch(apiUrl);
+
+                const usuarios = await res.json();
+                const tbody = document.getElementById("tablaUsuarios");
+                tbody.innerHTML = "";
+                usuarios.forEach(u => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="border px-4 py-2">${u.id}</td>
+                        <td class="border px-4 py-2">${u.nombre}</td>
+                        <td class="border px-4 py-2">${u.email}</td>
+                        <td class="border px-4 py-2">
+                            <button onclick="editarUsuario(${u.id}, '${u.nombre}', '${u.email}')" class="text-blue-600 hover:underline">Editar</button>
+                            |
+                            <button onclick="eliminarUsuario(${u.id})" class="text-red-600 hover:underline">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            }
+
+            document.getElementById("btnNuevo").addEventListener("click", () => {
+                document.getElementById("usuarioId").value = "";
+                document.getElementById("nombre").value = "";
+                document.getElementById("email").value = "";
+                document.getElementById("modalTitle").textContent = "Nuevo Usuario";
+                document.getElementById("modal").classList.remove("hidden");
+            });
+
+            document.getElementById("btnCerrar").addEventListener("click", () => {
+                document.getElementById("modal").classList.add("hidden");
+            });
+
+            document.getElementById("btnGuardar").addEventListener("click", async () => {
+                const id = document.getElementById("usuarioId").value;
+                const nombre = document.getElementById("nombre").value;
+                const email = document.getElementById("email").value;
+
+                const usuario = { nombre, email };
+                const method = id ? "PUT" : "POST";
+                const url = id ? `${apiUrl}/${id}` : apiUrl;
+
+                await fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(usuario)
+                });
+
+                document.getElementById("modal").classList.add("hidden");
+                cargarUsuarios();
+            });
+
+            function editarUsuario(id, nombre, email) {
+                document.getElementById("usuarioId").value = id;
+                document.getElementById("nombre").value = nombre;
+                document.getElementById("email").value = email;
+                document.getElementById("modalTitle").textContent = "Editar Usuario";
+                document.getElementById("modal").classList.remove("hidden");
+            }
+
+            async function eliminarUsuario(id) {
+                await fetch(`${apiUrl}/${id}`, { method: "DELETE" });
+                cargarUsuarios();
+            }
+
+            cargarUsuarios();
+        </script>
+
+    </section>
+
+    <!-- Cards Section -->
+    <section class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-10">
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-xl font-semibold mb-2">Rápido</h3>
+            <p>Desarrollo ágil con Spring Boot y Thymeleaf.</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-xl font-semibold mb-2">Flexible</h3>
+            <p>Personaliza tu diseño con Tailwind CSS.</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-xl font-semibold mb-2">Escalable</h3>
+            <p>Ideal para proyectos pequeños y grandes.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-4">
+        <p>&copy; 2025 Mi App Spring Boot</p>
+    </footer>
+</body>
+</html>
