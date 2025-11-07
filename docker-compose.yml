@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  springboot-thymeleaf-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: springboot-thymeleaf-app:v1.0.0
+    container_name: springboot-thymeleaf-app
+    environment:
+      SERVER_PORT: 9080
+      API_URL: http://springboot-app:9082/api/usuarios
+    ports:
+      - "9080:9080"
+    networks:
+      - spring-net
+
+networks:
+  spring-net:
+    external: true
